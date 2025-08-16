@@ -41,6 +41,56 @@ main {
     padding-bottom: 2rem;
 }
 
+/* --- NEW AUTH STYLES --- */
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #e9ecef;
+}
+
+.auth-container {
+    background: white;
+    padding: 2.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+.auth-container h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+}
+
+.auth-container p {
+    color: var(--secondary-color);
+    margin-bottom: 2rem;
+}
+
+.auth-container .form-group {
+    text-align: left;
+}
+
+.auth-container .btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+.auth-container .switch-auth {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+/* --- END AUTH STYLES --- */
+
+
 /* Navbar */
 .navbar {
     display: flex;
@@ -125,7 +175,7 @@ main {
 
 /* Forms */
 .form-container {
-    max-width: 500px;
+    max-width: 600px;
     margin: 2rem auto;
     padding: 2rem;
     background: white;
@@ -163,6 +213,11 @@ main {
     border-color: #86b7fe;
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control[readOnly] {
+    background-color: #e9ecef;
+    opacity: 1;
 }
 
 /* Cards & Tables */
@@ -218,16 +273,11 @@ thead th {
     margin-bottom: 1rem;
 }
 
-.d-flex {
+.spinner-container {
     display: flex;
-}
-
-.justify-content-center {
     justify-content: center;
-}
-
-.align-items-center {
     align-items: center;
+    height: 100vh;
 }
 
 .spinner {
@@ -245,13 +295,4 @@ thead th {
     to {
         transform: rotate(360deg);
     }
-}
-
-.auth-gate-container {
-    height: 80vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
 }
