@@ -20,8 +20,7 @@ const IssueCredential = () => {
     
     const [patientList, setPatientList] = useState([]);
     const [patientsLoading, setPatientsLoading] = useState(true);
-    
-    // --- VALIDATION: Get today's date in YYYY-MM-DD format ---
+
     const today = new Date().toISOString().split('T')[0];
 
     useEffect(() => {
@@ -69,9 +68,8 @@ const IssueCredential = () => {
         if (!ethers.isAddress(patientAddress)) {
             return toast.error('Selected patient has an invalid wallet address.');
         }
-        // --- MODIFICATION 1: CUSTOM TOAST FOR UNCONNECTED WALLET ---
         if (!isConnected || !signer) {
-            toast.error('Please connect your account first.'); // Specific message
+            toast.error('Please connect your account first.');
             await connectWallet();
             return;
         }
@@ -94,7 +92,10 @@ const IssueCredential = () => {
                 ipfsFileUrl: fileRes.ipfsFileUrl, fileCid: fileRes.cid,
                 ownerWallet: patientAddress,
             };
-            const metaRes = await uploadJsonToIPFS(metadata);
+            
+            // Call the updated ipfs.js function with a filename
+            const metadataFileName = `${formData.title.replace(/\s+/g, '-')}-metadata.json`;
+            const metaRes = await uploadJsonToIPFS(metadata, metadataFileName);
 
             toast.loading('3/4: Awaiting transaction...', { id: toastId });
             const contract = new ethers.Contract(contractAddress, contractAbi.abi, signer);
@@ -108,6 +109,7 @@ const IssueCredential = () => {
                     log.address.toLowerCase() === contractAddress.toLowerCase() &&
                     log.topics[0] === ethers.id("Transfer(address,address,uint256)")
                 );
+                
                 if (transferLog) {
                     const parsedLog = contract.interface.parseLog(transferLog);
                     tokenId = parsedLog.args.tokenId.toString();
@@ -135,7 +137,6 @@ const IssueCredential = () => {
 
         } catch (error) {
             console.error("Issuance failed:", error);
-            // --- MODIFICATION 2: CUSTOM TOAST FOR TRANSACTION REJECTION ---
             if (error.code === 'ACTION_REJECTED') {
                 toast.error('User rejected the transaction.', { id: toastId });
             } else {
@@ -175,8 +176,7 @@ const IssueCredential = () => {
                 </div>
                 <div className="form-group">
                     <label>Date Issued *</label>
-                    {/* --- VALIDATION: Added max={today} attribute --- */}
-                    <input name="issuedDate" type="date" value={formData.issuedDate} onChange={handleChange} className="form-control" max={today} required />
+                    <input name="issuedDate" type="date" value={formData.issuedDate} max={today} onChange={handleChange} className="form-control" required />
                 </div>
                 <div className="form-group">
                     <label>Description</label>

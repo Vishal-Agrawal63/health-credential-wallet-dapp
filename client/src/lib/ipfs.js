@@ -33,49 +33,35 @@ export const uploadFileToIPFS = async (file, idToken) => {
 };
 
 /**
- * Uploads JSON metadata to Pinata directly (less secure, used for simplicity).
- * In a production-level app, this should also go through the backend.
- * @param {object} metadata The JSON object to pin.
+ * Uploads JSON metadata to Pinata.
+ * @param {object} content The JSON object to pin.
+ * @param {string} name The desired filename for the JSON on Pinata.
  * @returns {Promise<object>} The response from Pinata containing IPFS data.
  */
-export const uploadJsonToIPFS = async (metadata) => {
-    const pinataApiKey = import.meta.env.VITE_PINATA_API_KEY;
-    const pinataSecretApiKey = import.meta.env.VITE_PINATA_SECRET_API_KEY;
-
-    if (!pinataApiKey || !pinataSecretApiKey) {
-        // Fallback to JWT if direct keys are not provided
-        const pinataJwt = import.meta.env.VITE_PINATA_JWT_FOR_JSON;
-        if (!pinataJwt) throw new Error("Pinata API credentials not found in .env file.");
-
-        try {
-            const response = await axios.post("https://api.pinata.cloud/pinning/pinJSONToIPFS", metadata, {
-                headers: {
-                    'Authorization': `Bearer ${pinataJwt}`
-                }
-            });
-            const cid = response.data.IpfsHash;
-            const ipfsGateway = import.meta.env.VITE_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
-            return {
-                cid: cid,
-                ipfsUrl: `ipfs://${cid}`,
-                gatewayUrl: `${ipfsGateway}${cid}`
-            };
-        } catch (error) {
-            console.error('Error uploading JSON to Pinata with JWT:', error.response ? error.response.data : error.message);
-            throw new Error('Failed to pin metadata to IPFS.');
-        }
-
+export const uploadJsonToIPFS = async (content, name) => {
+    const pinataJwt = import.meta.env.VITE_PINATA_JWT_FOR_JSON;
+    if (!pinataJwt) {
+        throw new Error("Pinata JWT for JSON not found in .env file.");
     }
 
-    console.warn("Using direct API keys for JSON upload. For enhanced security, proxy this through your backend.");
+    const data = JSON.stringify({
+        pinataContent: content,
+        pinataMetadata: {
+            name: name, // Use the provided name for the file on Pinata
+        },
+        pinataOptions: {
+            cidVersion: 1
+        }
+    });
 
     try {
-        const response = await axios.post("https://api.pinata.cloud/pinning/pinJSONToIPFS", metadata, {
+        const response = await axios.post("https://api.pinata.cloud/pinning/pinJSONToIPFS", data, {
             headers: {
-                'pinata_api_key': pinataApiKey,
-                'pinata_secret_api_key': pinataSecretApiKey
+                'Content-Type': 'application/json', // Set correct content type
+                'Authorization': `Bearer ${pinataJwt}`
             }
         });
+
         const cid = response.data.IpfsHash;
         const ipfsGateway = import.meta.env.VITE_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
         return {
