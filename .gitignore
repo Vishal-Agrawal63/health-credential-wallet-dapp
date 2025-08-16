@@ -12,3 +12,6 @@ client/.env.local
 # Build/compiled artifacts
 build/
 dist/
+
+health-credential-wallet-firebase-adminsdk-fbsvc-1752baba8f.json
+firebase_service_account_base64.txt
