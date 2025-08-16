@@ -1,4 +1,3 @@
-// PATH FROM REPO ROOT: /README.md
 # Health Credential Wallet dApp
 
 This is a full-stack decentralized application (dApp) for managing personal health credentials as NFTs on the Ethereum blockchain. It uses Firebase for user authentication and data management, Pinata for decentralized file storage on IPFS, and a Solidity smart contract on the Sepolia testnet.
@@ -41,3 +40,15 @@ This is a full-stack decentralized application (dApp) for managing personal heal
 ```bash
 git clone <repository_url>
 cd health-credential-wallet-dapp
+
+
+Step 2: Install Dependencies
+# from the project root
+npm install        # installs root dependencies
+cd client && npm install
+cd ../server && npm install
+
+
+Step 3: Run the Application
+# from the project root
+npm run dev
