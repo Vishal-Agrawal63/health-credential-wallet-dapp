@@ -1,10 +1,10 @@
-// PATH FROM REPO ROOT: /client/src/components/RecordsList.jsx
+// PATH FROM REPO ROOT: /client/src/components/IssuedRecords.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 
-const RecordsList = () => {
+const IssuedRecords = () => {
     const { currentUser, db } = useAuth();
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -13,10 +13,10 @@ const RecordsList = () => {
         const fetchRecords = async () => {
             if (!currentUser) return;
             try {
-                // Query records where the patientUid matches the current user
+                // Query records where the hospitalUid matches the current user
                 const q = query(
                     collection(db, "records"),
-                    where("patientUid", "==", currentUser.uid),
+                    where("hospitalUid", "==", currentUser.uid),
                     orderBy("createdAt", "desc")
                 );
                 const querySnapshot = await getDocs(q);
@@ -24,7 +24,7 @@ const RecordsList = () => {
                 setRecords(userRecords);
             } catch (error) {
                 console.error("Error fetching records:", error);
-                toast.error("Could not fetch records. You may need to create a Firestore index.");
+                toast.error("Could not fetch issued records. You may need to create a Firestore index.");
             } finally {
                 setLoading(false);
             }
@@ -33,27 +33,22 @@ const RecordsList = () => {
         fetchRecords();
     }, [currentUser, db]);
     
-    const handleShare = (url) => {
-        navigator.clipboard.writeText(url);
-        toast.success('Link copied to clipboard!');
-    };
-
     if (loading) return <div className="text-center"><div className="spinner"></div></div>;
 
     if (records.length === 0) {
-        return <p>You have no health records yet.</p>;
+        return <p>You have not issued any health records yet.</p>;
     }
 
     return (
         <div className="card">
-            <h2>Your Health Credentials</h2>
+            <h2>Credentials Issued by You</h2>
             <div className="table-responsive">
                 <table>
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Issuer</th>
                             <th>Date Issued</th>
+                            <th>Patient Wallet</th>
                             <th>Token ID</th>
                             <th>Actions</th>
                         </tr>
@@ -62,13 +57,11 @@ const RecordsList = () => {
                         {records.map(record => (
                             <tr key={record.id}>
                                 <td>{record.title}</td>
-                                <td>{record.issuerName}</td>
                                 <td>{record.issuedDate}</td>
+                                <td>{`${record.wallet.substring(0, 6)}...${record.wallet.substring(record.wallet.length - 4)}`}</td>
                                 <td>{record.tokenId}</td>
                                 <td>
-                                    <a href={record.gatewayFileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-info">View</a>
-                                    <a href={record.gatewayFileUrl} download className="btn btn-sm btn-secondary" style={{marginLeft: '4px'}}>Download</a>
-                                    <button onClick={() => handleShare(record.gatewayFileUrl)} className="btn btn-sm btn-primary" style={{marginLeft: '4px'}}>Share</button>
+                                    <a href={record.gatewayFileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-info">View Document</a>
                                 </td>
                             </tr>
                         ))}
@@ -79,4 +72,4 @@ const RecordsList = () => {
     );
 };
 
-export default RecordsList;
+export default IssuedRecords;

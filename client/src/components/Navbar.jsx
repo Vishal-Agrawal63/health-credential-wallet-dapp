@@ -2,12 +2,10 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../firebase';
-import { useWeb3 } from '../lib/web3';
 import WalletConnect from './WalletConnect';
 
 const Navbar = () => {
-    const { currentUser, signOut } = useAuth();
-    const { isConnected } = useWeb3();
+    const { userProfile, signOut } = useAuth();
     const navigate = useNavigate();
 
     const handleSignOut = async () => {
@@ -17,19 +15,22 @@ const Navbar = () => {
 
     return (
         <header className="navbar">
-            <Link to="/" className="navbar-brand">Health Wallet</Link>
+            <Link to="/profile" className="navbar-brand">Health Wallet</Link>
             <div className="nav-links">
-                {currentUser ? (
+                {userProfile?.role === 'patient' && (
                     <>
-                        <Link to="/profile">Profile</Link>
                         <Link to="/records">My Records</Link>
-                        <Link to="/upload">Upload & Mint</Link>
-                        <WalletConnect />
-                        <button onClick={handleSignOut} className="btn btn-danger btn-sm">Sign Out</button>
                     </>
-                ) : (
-                    <Link to="/login">Login</Link>
                 )}
+                {userProfile?.role === 'hospital' && (
+                    <>
+                        <Link to="/issue">Issue Credential</Link>
+                        <Link to="/issued">Issued Records</Link>
+                    </>
+                )}
+                <Link to="/profile">Profile</Link>
+                <WalletConnect />
+                <button onClick={handleSignOut} className="btn btn-danger btn-sm">Sign Out</button>
             </div>
         </header>
     );

@@ -55,7 +55,7 @@ export const Web3Provider = ({ children }) => {
         }
     };
 
-    const connectWallet = async () => {
+ const connectWallet = async () => {
         if (isConnected) return true;
 
         if (typeof window.ethereum === 'undefined') {
@@ -65,29 +65,27 @@ export const Web3Provider = ({ children }) => {
 
         try {
             const web3Provider = new ethers.BrowserProvider(window.ethereum);
-            setProvider(web3Provider);
-            
+            // ... (rest of connection logic)
             const accounts = await web3Provider.send('eth_requestAccounts', []);
             const currentAccount = accounts[0];
+            
+            // ... set states ...
+            setProvider(web3Provider);
             setAccount(currentAccount);
-
             const web3Signer = await web3Provider.getSigner();
             setSigner(web3Signer);
-
             const net = await web3Provider.getNetwork();
             setNetwork(net);
-
             setIsConnected(true);
             toast.success('Wallet connected!');
             
             if (currentUser) {
                  const userRef = doc(db, 'users', currentUser.uid);
-                 await updateDoc(userRef, { walletAddress: currentAccount });
+                 // --- FIX: Store the address in lowercase ---
+                 await updateDoc(userRef, { walletAddress: currentAccount.toLowerCase() });
             }
 
-            // Use the correct decimal comparison here
             if (net.chainId.toString() !== SEPOLIA_CHAIN_ID_DECIMAL) {
-                // Pass the newly created provider directly to avoid stale state
                 await switchNetwork(web3Provider);
             }
             
