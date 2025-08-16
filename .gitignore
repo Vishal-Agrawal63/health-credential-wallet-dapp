@@ -1,0 +1,14 @@
+# Node modules (ignore in root, server, and client)
+node_modules/
+server/node_modules/
+client/node_modules/
+
+# Environment files
+.env
+server/.env
+client/.env
+client/.env.local
+
+# Build/compiled artifacts
+build/
+dist/
