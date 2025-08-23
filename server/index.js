@@ -11,8 +11,32 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors({ origin: process.env.CLIENT_URL }));
+// --- ROBUST CORS CONFIGURATION ---
+// This allows your live frontend and local frontend to both communicate with the server.
+const allowedOrigins = [
+    process.env.CLIENT_URL, // Your live Netlify URL (e.g., https://your-site.netlify.app)
+    'http://localhost:5173'  // Your local development URL
+];
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests) for testing
+        if (!origin) return callback(null, true);
+
+        // If the incoming origin is in our list, allow it
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            return callback(null, true);
+        } else {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+    }
+};
+
+app.use(cors(corsOptions)); // Use the new, more flexible CORS options
+// --- END OF CORS CONFIGURATION ---
+
+
 app.use(express.json());
 
 const storage = multer.memoryStorage();
