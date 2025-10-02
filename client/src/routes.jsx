@@ -1,4 +1,3 @@
-// PATH FROM REPO ROOT: /client/src/routes.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './firebase';
@@ -9,6 +8,7 @@ import Login from './components/Login';
 import SignUp from './components/SignUp';
 import IssueCredential from './components/IssueCredential';
 import IssuedRecords from './components/IssuedRecords';
+import VerificationPortal from './components/VerificationPortal'; // <-- IMPORT THE NEW COMPONENT
 
 // A layout for authenticated users
 const AppLayout = () => (
@@ -49,13 +49,17 @@ const AppRoutes = () => {
     return (
         <Router>
             <Routes>
+                {/* Routes for users who are NOT logged in */}
                 {!currentUser ? (
                     <>
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<SignUp />} />
+                        {/* --- NEW PUBLIC ROUTE --- */}
+                        <Route path="/verify" element={<VerificationPortal />} />
                         <Route path="*" element={<Navigate to="/login" />} />
                     </>
                 ) : (
+                    /* Routes for users who ARE logged in */
                     <Route element={<AppLayout />}>
                         <Route path="/profile" element={<ProfilePage />} />
                         

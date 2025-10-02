@@ -15,7 +15,7 @@ const IssueCredential = () => {
     const { userProfile, auth, db } = useAuth();
     const { signer, isConnected, isSepolia, connectWallet } = useWeb3();
     const [file, setFile] = useState(null);
-    const [formData, setFormData] = useState({ title: '', issuedDate: '', description: '', patientWalletAddress: '' });
+    const [formData, setFormData] = useState({ title: '', issuedDate: '', description: '', patientWalletAddress: '', expirationDate: ''  });
     const [loading, setLoading] = useState(false);
     
     const [patientList, setPatientList] = useState([]);
@@ -81,6 +81,10 @@ const IssueCredential = () => {
             const patient = patientList.find(p => p.walletAddress === patientAddress);
             if (!patient) throw new Error("Could not verify selected patient.");
             
+            const expirationTimestamp = formData.expirationDate 
+                ? Math.floor(new Date(formData.expirationDate).getTime() / 1000) 
+                : 0;
+            
             toast.loading('1/4: Uploading file...', { id: toastId });
             const idToken = await auth.currentUser.getIdToken();
             const fileRes = await uploadFileToIPFS(file, idToken);
@@ -99,7 +103,8 @@ const IssueCredential = () => {
 
             toast.loading('3/4: Awaiting transaction...', { id: toastId });
             const contract = new ethers.Contract(contractAddress, contractAbi.abi, signer);
-            const tx = await contract.mintTo(patientAddress, metaRes.ipfsUrl);
+             // --- UPDATED: Pass the timestamp to the mintTo function ---
+            const tx = await contract.mintTo(patientAddress, metaRes.ipfsUrl, expirationTimestamp);
             const receipt = await tx.wait();
 
             let tokenId = null;
@@ -133,7 +138,8 @@ const IssueCredential = () => {
             toast.success(`NFT minted! Token ID: ${tokenId}`, { id: toastId });
             e.target.reset();
             setFile(null);
-            setFormData({ title: '', issuedDate: '', description: '', patientWalletAddress: '' });
+            // Reset form including the new field
+            setFormData({ title: '', issuedDate: '', description: '', patientWalletAddress: '', expirationDate: '' });
 
         } catch (error) {
             console.error("Issuance failed:", error);
@@ -181,6 +187,11 @@ const IssueCredential = () => {
                 <div className="form-group">
                     <label>Description</label>
                     <textarea name="description" value={formData.description} onChange={handleChange} className="form-control"></textarea>
+                </div>
+                {/* --- NEW FIELD: Expiration Date --- */}
+                <div className="form-group">
+                    <label>Expiration Date (Optional)</label>
+                    <input name="expirationDate" type="date" value={formData.expirationDate} min={today} onChange={handleChange} className="form-control" />
                 </div>
                 <div className="form-group">
                     <label>File (PDF, PNG, JPG) *</label>
