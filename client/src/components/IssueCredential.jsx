@@ -97,7 +97,6 @@ const IssueCredential = () => {
                 ownerWallet: patientAddress,
             };
             
-            // Call the updated ipfs.js function with a filename
             const metadataFileName = `${formData.title.replace(/\s+/g, '-')}-metadata.json`;
             const metaRes = await uploadJsonToIPFS(metadata, metadataFileName);
 
@@ -126,14 +125,29 @@ const IssueCredential = () => {
             }
 
             toast.loading('4/4: Saving record...', { id: toastId });
+            // --- MODIFICATION START: Add more fields to the saved document ---
             await setDoc(doc(db, 'records', uuidv4()), {
-                patientUid: patient.id, hospitalUid: auth.currentUser.uid,
-                issuerName: userProfile.hospitalName, wallet: patientAddress, tokenId: tokenId,
-                txHash: receipt.hash, contractAddress: contractAddress, title: formData.title,
-                issuedDate: formData.issuedDate, description: formData.description,
-                gatewayFileUrl: fileRes.gatewayFileUrl, gatewayMetadataUrl: metaRes.gatewayUrl,
+                patientUid: patient.id,
+                hospitalUid: auth.currentUser.uid,
+                issuerName: userProfile.hospitalName,
+                issuerWallet: (await signer.getAddress()).toLowerCase(), // Issuer's wallet address
+                patientWallet: patientAddress, // Renamed 'wallet' for clarity
+                tokenId: tokenId,
+                title: formData.title,
+                issuedDate: formData.issuedDate,
+                description: formData.description,
+                // Transaction Details to be saved
+                txHash: receipt.hash,
+                blockNumber: receipt.blockNumber,
+                gasUsed: receipt.gasUsed.toString(),
+                gasPrice: receipt.effectiveGasPrice.toString(),
+                // Other Info
+                contractAddress: contractAddress,
+                gatewayFileUrl: fileRes.gatewayFileUrl,
+                gatewayMetadataUrl: metaRes.gatewayUrl,
                 createdAt: serverTimestamp(),
             });
+            // --- MODIFICATION END ---
 
             toast.success(`NFT minted! Token ID: ${tokenId}`, { id: toastId });
             e.target.reset();
@@ -157,6 +171,7 @@ const IssueCredential = () => {
         <div className="form-container">
             <h2>Issue a New Health Credential</h2>
             <form onSubmit={handleSubmit}>
+                {/* The form JSX remains exactly the same */}
                 <div className="form-group">
                     <label>Select Patient *</label>
                     <select className="form-control" onChange={handlePatientSelect} disabled={patientsLoading} defaultValue="">

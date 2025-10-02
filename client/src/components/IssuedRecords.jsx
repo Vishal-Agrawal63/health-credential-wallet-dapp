@@ -4,6 +4,7 @@ import { useWeb3 } from '../lib/web3'; // Import useWeb3
 import { ethers } from 'ethers'; // Import ethers
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import toast from 'react-hot-toast';
+import { ethers } from 'ethers'; // Ethers is needed for formatting gas price
 import contractAbi from '../abi/HealthCredentialNFT.json'; // Import ABI
 
 // Ensure your contract address is in your .env file
@@ -14,6 +15,18 @@ const IssuedRecords = () => {
     const { signer, provider, isSepolia } = useWeb3(); // Get signer and provider for on-chain actions
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Helper function to truncate wallet addresses and hashes for display
+    const truncateHash = (hash) => {
+        if (!hash) return '...';
+        return `${hash.substring(0, 6)}...${hash.substring(hash.length - 4)}`;
+    };
+
+    // Helper to format gas price from Wei to Gwei for readability
+    const formatGasPrice = (priceInWei) => {
+        if (!priceInWei || priceInWei === "0") return 'N/A';
+        return `${parseFloat(ethers.formatUnits(priceInWei, 'gwei')).toFixed(2)} Gwei`;
+    };
     const [patientDataMap, setPatientDataMap] = useState({});
     
     // State to hold the on-chain status of each token
@@ -32,7 +45,7 @@ const IssuedRecords = () => {
                 const recordsQuery = query(
                     collection(db, "records"),
                     where("hospitalUid", "==", currentUser.uid),
-                    orderBy("createdAt", "desc")
+                    orderBy("createdAt", "desc") // Fetch newest first
                 );
                 const recordsSnapshot = await getDocs(recordsQuery);
                 const issuedRecords = recordsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -115,58 +128,93 @@ const IssuedRecords = () => {
     }
 
     return (
-        <div className="card">
+        <div>
             <h2>Credentials Issued by You</h2>
-            <div className="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Patient Name</th>
-                            <th>Date Issued</th>
-                            <th>Token ID</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {records.map(record => {
-                            const status = tokenStatuses[record.tokenId];
-                            let statusText = 'Loading...';
-                            if (status) {
-                                if (status.revoked) statusText = 'Revoked';
-                                else if (status.expired) statusText = 'Expired';
-                                else statusText = 'Active';
-                            }
+            <div className="issued-records-container">
+                {records.map((record, index) => {
+                    const previousHash = (index + 1 < records.length) 
+                        ? records[index + 1].txHash 
+                        : '0x0000000000000000000000000000000000000000'; 
+
+                    return (
+                        <div key={record.id} className="credential-card">
+                            <div className="card-header">Credential Block #{record.tokenId}</div>
                             
-                            return (
-                                <tr key={record.id}>
-                                    <td>{record.title}</td>
-                                    <td>{patientDataMap[record.patientUid] || 'N/A'}</td>
-                                    <td>{record.issuedDate}</td>
-                                    <td>{record.tokenId}</td>
-                                    <td>
-                                        <span className={`status-${statusText.toLowerCase()}`}>{statusText}</span>
-                                    </td>
-                                    <td>
-                                        <a href={record.gatewayFileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-info">View</a>
-                                        {/* Only show the Revoke button if the token is still active */}
-                                        {status && !status.revoked && !status.expired && (
-                                            <button 
-                                                onClick={() => handleRevoke(record.tokenId)} 
-                                                className="btn btn-sm btn-danger" 
-                                                style={{marginLeft: '4px'}}
-                                                disabled={!isSepolia}
-                                            >
-                                                Revoke
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                            <div className="card-body">
+                                <div className="section-title">Document Info</div>
+                                <div className="data-row">
+                                    <span className="icon">📎</span>
+                                    <span className="label">Title:</span>
+                                    <span className="value">{record.title}</span>
+                                </div>
+                                <div className="data-row">
+                                    <span className="icon">🏥</span>
+                                    <span className="label">Issuer Name:</span>
+                                    <span className="value">{record.issuerName}</span>
+                                </div>
+
+                                <hr />
+
+                                <div className="section-title">On-Chain Data</div>
+                                
+                                
+                                <div className="colored-bar-section purple">
+                                    <div className="data-row title-row">
+                                        <span className="label"><strong>Timestamp:</strong></span>
+                                        <span className="value">{new Date(record.createdAt?.seconds * 1000).toLocaleString()}</span>
+                                    </div>
+                                    <div className="data-row indented">
+                                        <span className="icon">⏱️</span>
+                                        <span className="label">Issuer Addr:</span>
+                                        <span className="value">{truncateHash(record.issuerWallet)}</span>
+                                    </div>
+                                    <div className="data-row indented">
+                                         <span className="icon">👤</span>
+                                         <span className="label">Receiver Addr:</span>
+                                         <span className="value">{truncateHash(record.patientWallet)}</span>
+                                    </div>
+                                </div>
+
+                                <div className="colored-bar-section split">
+                                     <div className="data-row title-row">
+                                         <span className="label"><strong>Integrity Hashes</strong></span>
+                                          <span className="value">{truncateHash(record.txHash)}</span>
+                                     </div>
+                                    <div className="data-row indented">
+                                         <span className="label">Previous Hash</span>
+                                         <span className="value">{truncateHash(previousHash)}</span>
+                                    </div>
+                                </div>
+
+                                 <hr />
+
+                                <div className="section-title">
+                                    Transaction Details <a href={`https://sepolia.etherscan.io/tx/${record.txHash}`} target="_blank" rel="noopener noreferrer">{truncateHash(record.txHash)} 🔗</a>
+                                </div>
+                                
+                                 <div className="data-row">
+                                    <span className="icon">📦</span>
+                                    <span className="label">Block Number:</span>
+                                    <span className="value">{record.blockNumber}</span>
+                                </div>
+                                 <div className="data-row">
+                                    <span className="icon">⛽</span>
+                                    <span className="label">Gas Used:</span>
+                                    <span className="value">{record.gasUsed ? parseInt(record.gasUsed).toLocaleString() : 'N/A'}</span>
+                                </div>
+                                 <div className="data-row">
+                                    <span className="icon">💰</span>
+                                    <span className="label">Gas Price:</span>
+                                    <span className="value">{formatGasPrice(record.gasPrice)}</span>
+                                </div>
+                            </div>
+                            
+                            <div className="card-footer text">
+                                ↓ Connects to Block #{parseInt(record.tokenId) + 1}'s Previous Hash
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
