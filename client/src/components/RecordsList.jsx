@@ -96,12 +96,12 @@ const RecordsList = () => {
                                     <div className="data-row indented">
                                         <span className="icon">⏱️</span>
                                         <span className="label">Issuer Addr:</span>
-                                        <span className="value">{truncateHash(record.issuerWallet)}</span>
+                                        <span className="value">{truncateHash(record.contractAddress)}</span>
                                     </div>
                                     <div className="data-row indented">
                                          <span className="icon">👤</span>
                                          <span className="label">Receiver Addr:</span>
-                                         <span className="value">{truncateHash(record.patientWallet)}</span>
+                                         <span className="value">{truncateHash(record.wallet)}</span>
                                     </div>
                                 </div>
 
@@ -127,7 +127,7 @@ const RecordsList = () => {
                                  <div className="data-row">
                                     <span className="icon">📦</span>
                                     <span className="label">Block Number:</span>
-                                    <span className="value">{record.blockNumber || 'N/A'}</span>
+                                    <span className="value">{record.tokenId || 'N/A'}</span>
                                 </div>
                                  <div className="data-row">
                                     <span className="icon">⛽</span>
