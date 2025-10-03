@@ -9,6 +9,8 @@ import Login from './components/Login';
 import SignUp from './components/SignUp';
 import IssueCredential from './components/IssueCredential';
 import IssuedRecords from './components/IssuedRecords';
+// --- 1. IMPORT THE NEW COMPONENT ---
+import VerifyCredential from './components/VerifyCredential';
 
 // A layout for authenticated users
 const AppLayout = () => (
@@ -49,11 +51,15 @@ const AppRoutes = () => {
     return (
         <Router>
             <Routes>
+                {/* --- 2. ADD THE PUBLIC VERIFICATION ROUTE HERE --- */}
+                <Route path="/verify" element={<VerifyCredential />} />
+                
                 {!currentUser ? (
                     <>
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<SignUp />} />
-                        <Route path="*" element={<Navigate to="/login" />} />
+                        {/* Update the catch-all to redirect to /verify, or /login */}
+                        <Route path="*" element={<Navigate to="/verify" />} />
                     </>
                 ) : (
                     <Route element={<AppLayout />}>

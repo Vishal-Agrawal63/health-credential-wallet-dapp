@@ -77,6 +77,8 @@ health-credential-wallet-dapp\client\.env.local
 
     # IPFS Gateway
     VITE_IPFS_GATEWAY=""
+    
+    VITE_SEPOLIA_RPC_URL="https://rpc.sepolia.org"
     ```
     
     health-credential-wallet-dapp\server\.env:

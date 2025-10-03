@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../firebase';
 import WalletConnect from './WalletConnect';
 
+
 const Navbar = () => {
     const { userProfile, signOut } = useAuth();
     const navigate = useNavigate();
@@ -29,6 +30,7 @@ const Navbar = () => {
                     </>
                 )}
                 <Link to="/profile">Profile</Link>
+                <Link to="/verify">Verify Credential</Link>
                 <WalletConnect />
                 <button onClick={handleSignOut} className="btn btn-danger btn-sm">Sign Out</button>
             </div>

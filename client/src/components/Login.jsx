@@ -49,6 +49,11 @@ const Login = () => {
                         {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
+                
+                <p className="switch-auth" style={{ marginTop: '2rem' }}>
+                    Are you a third party? <Link to="/verify">Verify a credential now</Link>.
+                </p>
+                
                 <p className="switch-auth">
                     Don't have an account? <Link to="/signup">Sign Up</Link>
                 </p>

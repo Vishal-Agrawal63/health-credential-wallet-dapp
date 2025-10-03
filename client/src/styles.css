@@ -450,3 +450,15 @@ main {
     color: var(--danger-color);
     font-weight: 700;
 }
+
+/* --- ADD THIS NEW STYLE --- */
+.credential-card .card-header .valid-badge {
+    background-color: var(--success-color);
+    color: white;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    margin-left: 1rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
