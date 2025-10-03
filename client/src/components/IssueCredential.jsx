@@ -130,6 +130,10 @@ const IssueCredential = () => {
             }
 
             toast.loading('4/4: Saving record...', { id: toastId });
+            
+            const gasUsed = receipt.gasUsed.toString();
+            const gasPrice = receipt.gasPrice.toString();
+            
             // Save expiryDate to Firestore
             await setDoc(doc(db, 'records', uuidv4()), {
                 patientUid: patient.id, hospitalUid: auth.currentUser.uid,
@@ -138,7 +142,9 @@ const IssueCredential = () => {
                 issuedDate: formData.issuedDate, expiryDate: formData.expiryDate, // Save here
                 description: formData.description,
                 gatewayFileUrl: fileRes.gatewayFileUrl, gatewayMetadataUrl: metaRes.gatewayUrl,
-                createdAt: serverTimestamp(),
+                createdAt: serverTimestamp(),// ADD THESE TWO NEW FIELDS
+                gasUsed: gasUsed,
+                gasPrice: gasPrice
             });
 
             toast.success(`NFT minted! Token ID: ${tokenId}`, { id: toastId });
