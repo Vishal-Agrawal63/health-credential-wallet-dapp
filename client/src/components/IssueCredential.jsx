@@ -1,4 +1,3 @@
-// PATH FROM REPO ROOT: /client/src/components/IssueCredential.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../firebase';
 import { useWeb3 } from '../lib/web3';
@@ -15,7 +14,8 @@ const IssueCredential = () => {
     const { userProfile, auth, db } = useAuth();
     const { signer, isConnected, isSepolia, connectWallet } = useWeb3();
     const [file, setFile] = useState(null);
-    const [formData, setFormData] = useState({ title: '', issuedDate: '', description: '', patientWalletAddress: '' });
+    // Add expiryDate to the form state
+    const [formData, setFormData] = useState({ title: '', issuedDate: '', expiryDate: '', description: '', patientWalletAddress: '' });
     const [loading, setLoading] = useState(false);
     
     const [patientList, setPatientList] = useState([]);
@@ -62,8 +62,12 @@ const IssueCredential = () => {
         e.preventDefault();
         const patientAddress = formData.patientWalletAddress.trim().toLowerCase();
 
-        if (!file || !formData.title || !formData.issuedDate || !patientAddress) {
+        // Add expiryDate to validation
+        if (!file || !formData.title || !formData.issuedDate || !formData.expiryDate || !patientAddress) {
             return toast.error('Please select a patient and fill all required fields.');
+        }
+        if (new Date(formData.expiryDate) <= new Date(formData.issuedDate)) {
+            return toast.error('Expiration date must be after the issued date.');
         }
         if (!ethers.isAddress(patientAddress)) {
             return toast.error('Selected patient has an invalid wallet address.');
@@ -86,20 +90,25 @@ const IssueCredential = () => {
             const fileRes = await uploadFileToIPFS(file, idToken);
 
             toast.loading('2/4: Uploading metadata...', { id: toastId });
+            // Add expiryDate to metadata
             const metadata = {
                 title: formData.title, issuer: userProfile.hospitalName, issuedDate: formData.issuedDate,
+                expiryDate: formData.expiryDate, // Add expiration date here
                 description: formData.description, mimeType: fileRes.mimeType,
                 ipfsFileUrl: fileRes.ipfsFileUrl, fileCid: fileRes.cid,
                 ownerWallet: patientAddress,
             };
             
-            // Call the updated ipfs.js function with a filename
             const metadataFileName = `${formData.title.replace(/\s+/g, '-')}-metadata.json`;
             const metaRes = await uploadJsonToIPFS(metadata, metadataFileName);
 
             toast.loading('3/4: Awaiting transaction...', { id: toastId });
+            // Convert expiry date to Unix timestamp for the smart contract
+            const expirationTimestamp = Math.floor(new Date(formData.expiryDate).getTime() / 1000);
+            
             const contract = new ethers.Contract(contractAddress, contractAbi.abi, signer);
-            const tx = await contract.mintTo(patientAddress, metaRes.ipfsUrl);
+            // Pass the timestamp to the mintTo function
+            const tx = await contract.mintTo(patientAddress, metaRes.ipfsUrl, expirationTimestamp);
             const receipt = await tx.wait();
 
             let tokenId = null;
@@ -121,11 +130,13 @@ const IssueCredential = () => {
             }
 
             toast.loading('4/4: Saving record...', { id: toastId });
+            // Save expiryDate to Firestore
             await setDoc(doc(db, 'records', uuidv4()), {
                 patientUid: patient.id, hospitalUid: auth.currentUser.uid,
                 issuerName: userProfile.hospitalName, wallet: patientAddress, tokenId: tokenId,
                 txHash: receipt.hash, contractAddress: contractAddress, title: formData.title,
-                issuedDate: formData.issuedDate, description: formData.description,
+                issuedDate: formData.issuedDate, expiryDate: formData.expiryDate, // Save here
+                description: formData.description,
                 gatewayFileUrl: fileRes.gatewayFileUrl, gatewayMetadataUrl: metaRes.gatewayUrl,
                 createdAt: serverTimestamp(),
             });
@@ -133,7 +144,8 @@ const IssueCredential = () => {
             toast.success(`NFT minted! Token ID: ${tokenId}`, { id: toastId });
             e.target.reset();
             setFile(null);
-            setFormData({ title: '', issuedDate: '', description: '', patientWalletAddress: '' });
+            // Reset expiryDate in form
+            setFormData({ title: '', issuedDate: '', expiryDate: '', description: '', patientWalletAddress: '' });
 
         } catch (error) {
             console.error("Issuance failed:", error);
@@ -151,6 +163,7 @@ const IssueCredential = () => {
         <div className="form-container">
             <h2>Issue a New Health Credential</h2>
             <form onSubmit={handleSubmit}>
+                {/* ... Patient Select and Wallet Address inputs ... */}
                 <div className="form-group">
                     <label>Select Patient *</label>
                     <select className="form-control" onChange={handlePatientSelect} disabled={patientsLoading} defaultValue="">
@@ -178,6 +191,12 @@ const IssueCredential = () => {
                     <label>Date Issued *</label>
                     <input name="issuedDate" type="date" value={formData.issuedDate} max={today} onChange={handleChange} className="form-control" required />
                 </div>
+                {/* --- NEW FIELD --- */}
+                <div className="form-group">
+                    <label>Expiration Date *</label>
+                    <input name="expiryDate" type="date" value={formData.expiryDate} min={formData.issuedDate || today} onChange={handleChange} className="form-control" required />
+                </div>
+                {/* --- END NEW FIELD --- */}
                 <div className="form-group">
                     <label>Description</label>
                     <textarea name="description" value={formData.description} onChange={handleChange} className="form-control"></textarea>

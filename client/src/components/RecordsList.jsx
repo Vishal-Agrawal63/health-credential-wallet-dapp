@@ -44,6 +44,16 @@ const RecordsList = () => {
         if (!priceInWei || priceInWei === "0") return 'N/A';
         return `${parseFloat(ethers.formatUnits(priceInWei, 'gwei')).toFixed(2)} Gwei`;
     };
+    
+        // --- NEW HELPER FUNCTION ---
+    const isCredentialExpired = (expiryDateString) => {
+        if (!expiryDateString) return false; // If no expiry date, it's not expired
+        // Set time to end of the day for comparison
+        const expiry = new Date(expiryDateString);
+        expiry.setHours(23, 59, 59, 999);
+        return expiry < new Date();
+    };
+    // --- END NEW HELPER ---
 
     const handleShare = (url) => {
         navigator.clipboard.writeText(url);
@@ -61,13 +71,20 @@ const RecordsList = () => {
             <h2>Your Health Credentials</h2>
             <div className="issued-records-container">
                 {records.map((record, index) => {
+                    
+                    // --- FIX: CALL THE HELPER FUNCTION HERE ---
+                    // This creates the 'isExpired' variable for the JSX below.
+                    const isExpired = isCredentialExpired(record.expiryDate);
+                    
                     const previousHash = (index + 1 < records.length) 
                         ? records[index + 1].txHash 
                         : '0x0000000000000000000000000000000000000000';
 
                     return (
-                        <div key={record.id} className="credential-card">
+                        <div key={record.id} className={`credential-card ${isExpired ? 'expired' : ''}`}>
                             <div className="card-header">Credential Block #{record.tokenId}</div>
+                            {/* Adding the visual "EXPIRED" badge */}
+                                {isExpired && <span className="expired-badge">EXPIRED</span>}
                             
                             <div className="card-body">
                                 <div className="section-title">Document Info</div>
@@ -81,6 +98,18 @@ const RecordsList = () => {
                                     <span className="label">Issuer Name:</span>
                                     <span className="value">{record.issuerName}</span>
                                 </div>
+                                
+                                                                {/* --- NEW EXPIRATION DISPLAY --- */}
+                                {record.expiryDate && (
+                                     <div className="data-row">
+                                        <span className="icon">⏳</span>
+                                        <span className="label">Expires:</span>
+                                        <span className={`value ${isExpired ? 'expired-text' : ''}`} >
+                                            {new Date(record.expiryDate).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                )}
+                                {/* --- END NEW DISPLAY --- */}
 
                                 <hr />
 

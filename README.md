@@ -48,7 +48,69 @@ npm install        # installs root dependencies
 cd client && npm install
 cd ../server && npm install
 
+next step:
+After that you need to make the below file:
+    
+health-credential-wallet-dapp\.env:
+    ```
+    DEPLOYER_PRIVATE_KEY=
+    SEPOLIA_RPC_URL=    
+    ```
+health-credential-wallet-dapp\client\.env.local
+    ```
+    # health-credential-wallet-dapp/client/.env.local
+    # Firebase Web App Config
+    VITE_FIREBASE_API_KEY=
+    VITE_FIREBASE_AUTH_DOMAIN=
+    VITE_FIREBASE_PROJECT_ID=
+    VITE_FIREBASE_STORAGE_BUCKET=
+    VITE_FIREBASE_MESSAGING_SENDER_ID=
+    VITE_FIREBASE_APP_ID=
 
-Step 3: Run the Application
+    # Server & Contract
+    VITE_SERVER_URL=""
+    VITE_CONTRACT_ADDRESS= # Add this after deployment in Step 5
+
+    # Pinata API Keys for JSON metadata upload (alternative to backend proxy for JSON)
+    # For better security, proxy JSON uploads too. For simplicity, we can use keys on client.
+    VITE_PINATA_JWT_FOR_JSON=
+
+    # IPFS Gateway
+    VITE_IPFS_GATEWAY=""
+    ```
+    
+    health-credential-wallet-dapp\server\.env:
+    ```
+    
+    PORT=3001
+    CLIENT_URL="http://localhost:5173"
+
+    # Pinata API Key (JWT)
+    PINATA_JWT=""
+
+    # Your preferred IPFS Gateway
+    IPFS_GATEWAY=""
+
+    # Firebase Admin SDK credentials (Base64 encoded)
+    # 1. Generate a new private key in your Firebase project settings.
+    # 2. Base64 encode the entire JSON file content.
+    # 3. Paste the Base64 string here.
+    # Example command: base64 -i /path/to/your/serviceAccountKey.json | pbcopy
+    FIREBASE_SERVICE_ACCOUNT_BASE64=""
+    
+    # Optional: Set to 'true' to enforce server-side authentication
+    ENABLE_FIREBASE_TOKEN_VERIFICATION='false'  
+    ```
+
+step 3: truffle compile
+    truffle migrate --network sepolia
+    
+    change the value of 'VITE_CONTRACT_ADDRESS' in this file "client\.env.local"
+
+    copy "build\contracts\HealthCredentialNFT.json"
+    paste inside "client\src\abi\HealthCredentialNFT.json"
+    
+
+Step 4: Run the Application
 # from the project root
 npm run dev
