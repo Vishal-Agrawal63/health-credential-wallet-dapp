@@ -46,6 +46,22 @@ const RecordsList = () => {
     };
     
         // --- NEW HELPER FUNCTION ---
+    // Calculates and formats the total transaction fee.
+    const formatTransactionFee = (gasUsed, gasPrice) => {
+        // Check if the necessary data exists (for older records)
+        if (!gasUsed || !gasPrice || gasPrice === "0") return 'N/A';
+        
+        // Use BigInt for safe multiplication of large numbers
+        const gasUsedBigInt = BigInt(gasUsed);
+        const gasPriceBigInt = BigInt(gasPrice);
+        const feeInWei = gasUsedBigInt * gasPriceBigInt;
+
+        // Format the result from Wei to a readable ETH string
+        return `${ethers.formatEther(feeInWei)} ETH`;
+    };
+    // --- END NEW HELPER ---
+    
+        // --- NEW HELPER FUNCTION ---
     const isCredentialExpired = (expiryDateString) => {
         if (!expiryDateString) return false; // If no expiry date, it's not expired
         // Set time to end of the day for comparison
@@ -167,6 +183,11 @@ const RecordsList = () => {
                                     <span className="icon">💰</span>
                                     <span className="label">Gas Price:</span>
                                     <span className="value">{formatGasPrice(record.gasPrice)}</span>
+                                </div>
+                                <div className="data-row">
+                                    <span className="icon">💸</span>
+                                    <span className="label">Trxn Fee:</span>
+                                    <span className="value">{formatTransactionFee(record.gasUsed, record.gasPrice)}</span>
                                 </div>
 
                             </div>

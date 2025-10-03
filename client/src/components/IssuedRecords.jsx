@@ -180,6 +180,11 @@ const IssuedRecords = () => {
                                     <span className="label">Gas Price:</span>
                                     <span className="value">{formatGasPrice(record.gasPrice)}</span>
                                 </div>
+                                <div className="data-row">
+                                    <span className="icon">💸</span>
+                                    <span className="label">Trxn Fee:</span>
+                                    <span className="value">{formatTransactionFee(record.gasUsed, record.gasPrice)}</span>
+                                </div>
                             </div>
 
                             <div className="card-footer text">
