@@ -10,7 +10,7 @@
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --border-radius: 0.375rem;
     --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-
+    
     /* --- New Design Variables --- */
     --card-header-gradient: linear-gradient(90deg, #512da8 0%, #9c27b0 100%);
     --card-bg: #ffffff;
@@ -26,8 +26,7 @@
 
 body {
     font-family: var(--font-family);
-    background-color: #eef2f6;
-    /* Slightly darker background to make white cards pop */
+    background-color: #eef2f6; /* Slightly darker background to make white cards pop */
     color: var(--dark-color);
     margin: 0;
     line-height: 1.5;
@@ -172,6 +171,12 @@ main {
     border-color: var(--secondary-color);
 }
 
+.btn-danger {
+    color: #fff;
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
 .btn-info {
     color: #fff;
     background-color: var(--info-color);
@@ -247,7 +252,6 @@ main {
     border-radius: 50%;
     animation: spinner-border .75s linear infinite;
 }
-
 @keyframes spinner-border {
     to {
         transform: rotate(360deg);
@@ -260,7 +264,7 @@ main {
     margin-top: 2rem;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    gap: 2rem; 
 }
 
 @media (max-width: 1200px) {
@@ -279,7 +283,7 @@ main {
     background-color: var(--card-bg);
     border-radius: 1rem;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05), 0 6px 6px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
+    overflow: hidden; 
     font-family: var(--font-family);
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     display: flex;
@@ -333,7 +337,7 @@ main {
 .credential-card .data-row .icon {
     margin-right: 0.6rem;
     color: var(--icon-color);
-    width: 1.2rem;
+    width: 1.2rem; 
     text-align: center;
     font-size: 1rem;
 }
@@ -371,8 +375,8 @@ main {
 
 /* The split-color bar */
 .credential-card .colored-bar-section.split {
-    position: relative;
-    padding-left: 1rem;
+     position: relative;
+     padding-left: 1rem;
 }
 
 .credential-card .colored-bar-section.split::before {
@@ -426,9 +430,7 @@ main {
     font-size: 0.85rem;
 }
 
-/* ... at the end of the file ... */
-
-/* --- NEW EXPIRATION STYLES --- */
+/* --- EXPIRATION STYLES --- */
 
 .credential-card.expired {
     opacity: 0.75;
@@ -451,7 +453,6 @@ main {
     font-weight: 700;
 }
 
-/* --- ADD THIS NEW STYLE --- */
 .credential-card .card-header .valid-badge {
     background-color: var(--success-color);
     color: white;
@@ -461,4 +462,30 @@ main {
     margin-left: 1rem;
     font-weight: 600;
     vertical-align: middle;
+}
+
+/* --- NEW REVOCATION STYLES --- */
+
+.credential-card.revoked {
+    border: 2px solid var(--secondary-color);
+    background-color: #f8f9fa; /* Light grey background */
+}
+
+/* Style for the "REVOKED" badge in the header */
+.credential-card .card-header .revoked-badge {
+    background-color: var(--secondary-color); /* Grey badge */
+    color: white;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    margin-left: 1rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+/* Style for any revoked text in the card body */
+.credential-card .revoked-text {
+    color: var(--secondary-color);
+    font-weight: 700;
+    text-decoration: line-through;
 }

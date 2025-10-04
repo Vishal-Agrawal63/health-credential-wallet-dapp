@@ -6,13 +6,19 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title HealthCredentialNFT
- * @dev An ERC721 token for minting health credentials with expiration dates.
+ * @dev An ERC721 token for minting and revoking health credentials.
  */
 contract HealthCredentialNFT is ERC721URIStorage, Ownable {
     uint256 private _tokenIdCounter;
     
     // Mapping from token ID to its expiration Unix timestamp.
     mapping(uint256 => uint256) private _expirationTimestamps;
+    
+    // --- NEW: Add a mapping to track revoked tokens ---
+    mapping(uint256 => bool) private _isRevoked;
+
+    // --- NEW: Add an event to announce revocations ---
+    event CredentialRevoked(uint256 indexed tokenId);
 
     /**
      * @dev Sets the contract name, symbol, and initial owner.
@@ -24,12 +30,7 @@ contract HealthCredentialNFT is ERC721URIStorage, Ownable {
 
     /**
      * @dev Mints a new token and assigns it to `to`, with an expiration date.
-     * The token URI is set to the IPFS metadata URL.
      * Can only be called by the contract owner.
-     * @param to The address to receive the new NFT.
-     * @param tokenURI The URI of the token's metadata JSON file on IPFS.
-     * @param expirationTimestamp The Unix timestamp when the credential expires.
-     * @return The ID of the newly minted token.
      */
     function mintTo(address to, string memory tokenURI, uint256 expirationTimestamp) public onlyOwner returns (uint256) {
         require(expirationTimestamp > block.timestamp, "Expiration must be in the future");
@@ -43,31 +44,49 @@ contract HealthCredentialNFT is ERC721URIStorage, Ownable {
         return tokenId;
     }
 
+    // --- NEW: Create the revoke function ---
+    /**
+     * @dev Revokes a token, marking it as invalid.
+     * Can only be called by the contract owner.
+     * @param tokenId The ID of the token to revoke.
+     */
+    function revoke(uint256 tokenId) public onlyOwner {
+        // Ensure the token exists before revoking
+        ownerOf(tokenId); 
+        _isRevoked[tokenId] = true;
+        emit CredentialRevoked(tokenId);
+    }
+    
     /**
      * @dev Returns the Unix timestamp for when a token expires.
-     * @param tokenId The ID of the token to query.
-     * @return The expiration timestamp. Returns 0 if not set.
      */
     function getExpirationTimestamp(uint256 tokenId) public view returns (uint256) {
-        // --- FIX: Use ownerOf to ensure the token exists. It will revert if it doesn't. ---
         ownerOf(tokenId); 
         return _expirationTimestamps[tokenId];
     }
     
     /**
      * @dev Checks if a credential has expired.
-     * @param tokenId The ID of the token to check.
-     * @return True if the current block timestamp is after the expiration timestamp.
      */
     function isExpired(uint256 tokenId) public view returns (bool) {
-        // --- FIX: Use ownerOf to ensure the token exists. It will revert if it doesn't. ---
         ownerOf(tokenId);
         uint256 expiration = _expirationTimestamps[tokenId];
         return expiration > 0 && block.timestamp >= expiration;
     }
 
+    // --- NEW: Create a public view function to check revocation status ---
     /**
-     * @dev Base URI for computing `tokenURI`. Overridden to be empty.
+     * @dev Checks if a credential has been revoked.
+     * @param tokenId The ID of the token to check.
+     * @return True if the token has been revoked.
+     */
+    function isRevoked(uint256 tokenId) public view returns (bool) {
+        ownerOf(tokenId);
+        return _isRevoked[tokenId];
+    }
+
+    /**
+     * @dev Base URI for computing `tokenURI`.
      */
     function _baseURI() internal pure override returns (string memory) {
         return "";
