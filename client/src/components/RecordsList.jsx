@@ -117,8 +117,8 @@ const RecordsList = () => {
                                 <div className="data-row"><span className="icon">💸</span><span className="label">Trxn Fee:</span><span className="value">{formatTransactionFee(record.gasUsed, record.gasPrice)}</span></div>
                             </div>
                             <div className="card-footer actions">
-                                <a href={record.gatewayFileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-info">View</a>
-                                <a href={record.gatewayFileUrl} download className="btn btn-sm btn-secondary">Download</a>
+                                <a href={record.gatewayFileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-info download-color">View</a>
+                                <a href={record.gatewayFileUrl} download className="btn btn-sm btn-secondary download-color">Download</a>
                                 <button onClick={() => handleShare(record.gatewayFileUrl)} className="btn btn-sm btn-primary">Share</button>
                             </div>
                         </div>
